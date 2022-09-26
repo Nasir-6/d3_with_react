@@ -1,6 +1,10 @@
 import logo from './logo.svg';
 import './App.css';
+import React from 'react'
+import ReactDom from 'react-dom'
+import {arc} from 'd3'
 
+console.log(arc)
 function App() {
 
   const width = 960;
@@ -29,7 +33,7 @@ function App() {
       r={eyeRadius}
       />
        <circle
-      cx={centerX - eyeOffsetX}
+      cx={centerX + eyeOffsetX}
       cy={centerY - eyeOffsetY}
       r={eyeRadius}
       />

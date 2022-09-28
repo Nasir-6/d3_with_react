@@ -5,6 +5,7 @@ import ReactDom from 'react-dom'
 import { Face } from './components/Face';
 import { Colors } from './components/Colors';
 import { Sunburst } from './components/Sunburst';
+import { DataProcessor } from './components/EAIData/DataProcessor';
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
       {/* <Face/> */}
       {/* <Colors/> */}
       <Sunburst/>
+      <DataProcessor/>
 
 
     </div>

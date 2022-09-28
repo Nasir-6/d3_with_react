@@ -6,7 +6,9 @@ import { interpolate, select } from 'd3';
 import {useEffect, useRef} from 'react'
 
 // read in data - Replace with some fetch request eventually!
-import data from '../data.json'
+// import data from '../data.json'
+// import data from '../Originaldata-Tony.json'
+import data from '../myData.json'
 
 export const Sunburst = () => {
 
@@ -37,8 +39,8 @@ export const Sunburst = () => {
     var chart = () => {
 
       const root = partitionData(data);
-      console.log('root', root)
-      console.log('root.descendants().slice(1)', root.descendants().slice(1))
+    //   console.log('root', root)
+    //   console.log('root.descendants().slice(1)', root.descendants().slice(1))
 
       root.each((d) => (d.current = d));
 
@@ -47,7 +49,7 @@ export const Sunburst = () => {
         .attr("viewBox", [0, 0, WIDTH, WIDTH])
         .style("font", "15px sans-serif")
         .style("height", "85vh");
-      console.log("svg", svg);
+    //   console.log("svg", svg);
 
       const g = svg
         .append("g")
@@ -189,25 +191,26 @@ export const Sunburst = () => {
               hasMoved = false;
 
               word = words.pop();
-          while ((word) && !hasMoved) {  // whilst you got words to pop - keep going! - ALSO Added hasMoved to make it stop
+          while ((word)) {  // whilst you got words to pop - keep going! - ALSO Added hasMoved to make it stop
             line.push(word);
             tspan.text(line.join(" "));
             // if (tspan.node().getComputedTextLength() > width) {
-            console.log('tspan.text()', tspan.text())
-            console.log('tspan.text().length > 45', tspan.text().length > 45)
+            // console.log('tspan.text()', tspan.text())
+            // console.log('tspan.text().length > 45', tspan.text().length > 45)
             if (tspan.text().length > 45) {     // If current length is more than 45 chars - turn it into a variable??
               line.pop();       // remove last word
               tspan.text(line.join(" "));   // Join the array of words by adding in space in between
-              console.log('tspan.text()', tspan.text())
-              console.log('line', line)
+            //   console.log('tspan.text()', tspan.text())
+            //   console.log('line', line)
               line = [word];
-              console.log('line After [word]', line)
+            //   console.log('line After [word]', line)
               if (!hasMoved) {
                 tspan.attr('dy', (dy - 0.5) + 'em');    // move it down a bit?? what is dy
                 hasMoved = true;                        // the text has now moved
               }
               tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", lineHeight + "em").text(word);
-              tspan.append("tspan").text("...")
+              // TO ADD EPLISES MAKE SURE WHILE STATEMENT HAS && !hasMoved
+            //   tspan.append("tspan").text("...")
             }
             word = words.pop();
           }

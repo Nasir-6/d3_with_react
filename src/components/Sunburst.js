@@ -10,8 +10,8 @@ import data from '../data.json'
 
 export const Sunburst = () => {
 
-    const WIDTH = 932;
-    const RADIUS = WIDTH / 6
+    const WIDTH = 1730;      // seems to adjust the text-container/text size - smaller value - larger text etc.
+    const RADIUS = WIDTH / 6    // Sets radius of circle - /6 seems to fit perfect - why?
 
     var myArc = arc()
     .startAngle(d => d.x0)
@@ -20,35 +20,35 @@ export const Sunburst = () => {
     .padRadius(RADIUS * 1.5)
     .innerRadius(d => d.y0 * RADIUS)
     .outerRadius(d => Math.max(d.y0 * RADIUS, d.y1 * RADIUS - 1))
-    console.log(myArc)
 
     var formatData = format(",d")
 
     var setColor = scaleOrdinal(quantize(interpolateRainbow, data.children.length + 1))
 
     var partitionData = data => {
-        console.log(data)
         const root = hierarchy(data)
-            .sum(d => d.value)
-            .sort((a, b) => b.value - a.value);
-        return partition()
-            .size([2 * Math.PI, root.height + 1])
-        (root);
+            .sum(d => d.value)  // sum the values - so can get total value and split
+            .sort((a, b) => b.value - a.value);     // sort so first one starting at 12:00 is the largest module 
+
+        return partition().size([2 * Math.PI, root.height + 1])(root);
     }
 
     // creating the actual chart - REMEMBER TO CALL IT
     var chart = () => {
-      console.log("data", data);
+
       const root = partitionData(data);
-      console.log("root", root);
+      console.log('root', root)
+      console.log('root.descendants().slice(1)', root.descendants().slice(1))
 
       root.each((d) => (d.current = d));
 
       // select svg tag and set attributes - note in Observe D3 example they use create - can try it later
       const svg = select("svg")
         .attr("viewBox", [0, 0, WIDTH, WIDTH])
-        .style("font", "10px sans-serif");
+        .style("font", "15px sans-serif")
+        .style("height", "85vh");
       console.log("svg", svg);
+
       const g = svg
         .append("g")
         .attr("transform", `translate(${WIDTH / 2},${WIDTH / 2})`);
@@ -91,12 +91,14 @@ export const Sunburst = () => {
         .attr("text-anchor", "middle")
         .style("user-select", "none")
         .selectAll("text")
-        .data(root.descendants().slice(1))
+        .data(root.descendants().slice(1))      // sets data to all the array elements ignoring first one which is EAI curriculum which is not on the chart!
         .join("text")
         .attr("dy", "0.35em")
         .attr("fill-opacity", (d) => +labelVisible(d.current))
         .attr("transform", (d) => labelTransform(d.current))
-        .text((d) => d.data.name);
+        .text((d) => d.data.name)
+        // ADD IN ??
+        .call(wrap, 900);
 
       const parent = g
         .append("circle")
@@ -109,18 +111,16 @@ export const Sunburst = () => {
       // FUNCTIONS NEEDED ABOVE
       function clicked(event, p) {
         parent.datum(p.parent || root);
+        // ADD IN ??
+        // window.parent.postMessage(p, '*');
 
         root.each(
           (d) =>
             (d.target = {
               x0:
-                Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) *
-                2 *
-                Math.PI,
+                Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
               x1:
-                Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) *
-                2 *
-                Math.PI,
+                Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
               y0: Math.max(0, d.y0 - p.depth),
               y1: Math.max(0, d.y1 - p.depth),
             })
@@ -174,6 +174,48 @@ export const Sunburst = () => {
         })`;
       }
 
+
+      function wrap(text, width) {
+        text.each(function() {
+          var text = select(this),
+              words = text.text().split(/\s+/).reverse(),       //Splits and reverses - so can pop off the end!
+              word,
+              line = [],
+              lineNumber = 0,
+              lineHeight = 0.8, // ems
+              y = text.attr("y"),
+              dy = parseFloat(text.attr("dy")),
+              tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em"),
+              hasMoved = false;
+
+              word = words.pop();
+          while ((word) && !hasMoved) {  // whilst you got words to pop - keep going! - ALSO Added hasMoved to make it stop
+            line.push(word);
+            tspan.text(line.join(" "));
+            // if (tspan.node().getComputedTextLength() > width) {
+            console.log('tspan.text()', tspan.text())
+            console.log('tspan.text().length > 45', tspan.text().length > 45)
+            if (tspan.text().length > 45) {     // If current length is more than 45 chars - turn it into a variable??
+              line.pop();       // remove last word
+              tspan.text(line.join(" "));   // Join the array of words by adding in space in between
+              console.log('tspan.text()', tspan.text())
+              console.log('line', line)
+              line = [word];
+              console.log('line After [word]', line)
+              if (!hasMoved) {
+                tspan.attr('dy', (dy - 0.5) + 'em');    // move it down a bit?? what is dy
+                hasMoved = true;                        // the text has now moved
+              }
+              tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", lineHeight + "em").text(word);
+              tspan.append("tspan").text("...")
+            }
+            word = words.pop();
+          }
+          
+        });
+      }
+      
+
       return svg.node();
       // return "Hello";
     };
@@ -188,7 +230,9 @@ export const Sunburst = () => {
     return (
       <div>
         <h1>Sunburst</h1>
+        <div width="10vw" height="10vh">
         <svg></svg>
+        </div>
       </div>
     );
 }

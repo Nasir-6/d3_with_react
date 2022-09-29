@@ -8,7 +8,9 @@ import {useEffect, useRef} from 'react'
 // read in data - Replace with some fetch request eventually!
 // import data from '../data.json'
 // import data from '../Originaldata-Tony.json'
-import data from '../myData.json'
+// import data from '../myData.json'
+// import data from '../newCategoriesData.json'
+import data from '../newWeightedCategories.json'
 
 export const Sunburst = () => {
 
@@ -47,8 +49,9 @@ export const Sunburst = () => {
       // select svg tag and set attributes - note in Observe D3 example they use create - can try it later
       const svg = select("svg")
         .attr("viewBox", [0, 0, WIDTH, WIDTH])
-        .style("font", "15px sans-serif")
-        .style("height", "85vh");
+        .style("font", "20px sans-serif")
+        // .style("height", "80vh")
+        .style("width", "50vw");
     //   console.log("svg", svg);
 
       const g = svg
@@ -170,7 +173,7 @@ export const Sunburst = () => {
 
       function labelTransform(d) {
         const x = (((d.x0 + d.x1) / 2) * 180) / Math.PI;
-        const y = ((d.y0 + d.y1) / 2) * RADIUS;
+        const y = ((d.y0 + d.y1) / 2) * (RADIUS);
         return `rotate(${x - 90}) translate(${y},0) rotate(${
           x < 180 ? 0 : 180
         })`;
@@ -197,7 +200,7 @@ export const Sunburst = () => {
             // if (tspan.node().getComputedTextLength() > width) {
             // console.log('tspan.text()', tspan.text())
             // console.log('tspan.text().length > 45', tspan.text().length > 45)
-            if (tspan.text().length > 45) {     // If current length is more than 45 chars - turn it into a variable??
+            if (tspan.text().length > 40) {     // If current length is more than 45 chars - turn it into a variable??
               line.pop();       // remove last word
               tspan.text(line.join(" "));   // Join the array of words by adding in space in between
             //   console.log('tspan.text()', tspan.text())
@@ -233,9 +236,7 @@ export const Sunburst = () => {
     return (
       <div>
         <h1>Sunburst</h1>
-        <div width="10vw" height="10vh">
         <svg></svg>
-        </div>
       </div>
     );
 }

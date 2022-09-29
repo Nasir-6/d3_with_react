@@ -6,15 +6,17 @@ import { Face } from './components/Face';
 import { Colors } from './components/Colors';
 import { Sunburst } from './components/Sunburst';
 import { DataProcessor } from './components/EAIData/DataProcessor';
+import { Icicle } from './components/Icicle';
 
 
 function App() {
   
   return (
-    <div className="App">
+    <div className="App" style={{display: "flex"}}>
       {/* <Face/> */}
       {/* <Colors/> */}
       <Sunburst/>
+      {/* <Icicle/> */}
       <DataProcessor/>
 
 

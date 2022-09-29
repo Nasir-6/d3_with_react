@@ -19,7 +19,19 @@ export const DataProcessor = () => {
 
         for (const row of csvData) {
 
-            const cat = data;
+
+          const newCat = data;
+            if (!newCat.children.find(a => a.name === row['Parent Category'])) {
+                newCat.children.push({
+                    name: row['Parent Category'],
+                    children: []
+                })
+            }
+
+
+
+
+            const cat = newCat.children.find(a => a.name === row['Parent Category']);
             if (!cat.children.find(a => a.name === row['Computational Concepts'])) {
                 cat.children.push({
                     name: row['Computational Concepts'],
@@ -44,10 +56,42 @@ export const DataProcessor = () => {
                 })
             }
 
-            console.log('cat', cat)
         }
 
-        console.log('data', data)
+
+        // Tony's value adjuster depending on string length 
+
+        // All of below is to set the value according to length of LO string
+
+// First find the max level
+let max = 0;
+for (const lv1 of data.children) {
+    for (const lv2 of lv1.children) {
+      for (const lv3 of lv2.children) {
+        if (lv3.children.length > max) {
+            max = lv3.children.length;
+        }
+    }
+    }
+}
+
+for (const lv1 of data.children) {
+    for (const lv2 of lv1.children) {
+      for (const lv3 of lv2.children) {
+        const num = lv3.children.length;
+        const minWeight = Math.round(max/num);  // This is like the defualt value for the LOs
+        // const minWeight = 10;
+        for (const lv4 of lv3.children) {
+            const lenWeight = Math.round((lv4.name.length)/10);     // This is the length of the LO string
+            const weight = (minWeight > lenWeight) ? minWeight : lenWeight ;            // Set the weigh accordingly
+            lv4.value = weight;
+        }
+    }
+    }
+}
+        
+
+        
 
         // save data as a json
         console.log('THIS IS JSON', JSON.stringify(data));

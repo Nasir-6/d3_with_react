@@ -7,6 +7,7 @@ import { Colors } from './components/Colors';
 import { Sunburst } from './components/Sunburst';
 import { DataProcessor } from './components/EAIData/DataProcessor';
 import { Icicle } from './components/Icicle';
+import { Sunburst_unravel } from './components/Sunburst_unravel';
 
 
 function App() {
@@ -15,8 +16,9 @@ function App() {
     <div className="App" style={{display: "flex"}}>
       {/* <Face/> */}
       {/* <Colors/> */}
-      <Sunburst/>
+      {/* <Sunburst/> */}
       {/* <Icicle/> */}
+      <Sunburst_unravel/>
       <DataProcessor/>
 
 

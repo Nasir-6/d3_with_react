@@ -12,7 +12,7 @@ import {useEffect, useRef} from 'react'
 // import data from '../newCategoriesData.json'
 import data from '../newWeightedCategories.json'
 
-export const Sunburst = () => {
+export const Sunburst_unravel = () => {
 
     const WIDTH = 1730;      // seems to adjust the text-container/text size - smaller value - larger text etc.
     const RADIUS = WIDTH / 6    // Splits Width (Diameter) into 6 parts - so can have 3 levels (1-inner white, 2-First level, 3-Second level)
@@ -130,6 +130,14 @@ export const Sunburst = () => {
         // y = radial position - this is equivalent to depth/LEVEL! 
         // p = sector clicked on 
 
+        // console.log('p', p)
+        if(p.depth === 3) {
+          // clicking on last layer should unravel it
+          console.log("onto last layer")
+
+        }
+
+        //
         root.each(
           (d) =>
             (d.target = {
@@ -260,7 +268,7 @@ export const Sunburst = () => {
 
     return (
       <div>
-        <h1>Sunburst</h1>
+        <h1>Sunburst Unravel</h1>
         <svg overflow="visible"></svg>
       </div>
     );

@@ -9,12 +9,12 @@ import { useEffect, useRef } from "react";
 // import data from '../data.json'
 // import data from '../Originaldata-Tony.json'
 // import data from "../myData.json";
-// import data from "../newCategoriesData.json";
-import data from "../newWeightedCategories.json";
+import data from "../newCategoriesData.json";
+// import data from "../newWeightedCategories.json";
 
 export const Icicle = () => {
   const WIDTH = 975;
-  const HEIGHT = 1000;
+  const HEIGHT = 1500;
 
   var formatData = format(",d");
 
@@ -37,8 +37,9 @@ export const Icicle = () => {
 
   const svg = select("svg")
       .attr("viewBox", [0, 0, WIDTH, HEIGHT])
-      .style("font", "8px sans-serif")
+      .style("font", "15px sans-serif")
       .style("width", "50vw")
+      .style("overflow", "auto")
       // .style("height", "100vh");
 
   const cell = svg
@@ -63,43 +64,67 @@ export const Icicle = () => {
       .style("user-select", "none")
       .attr("pointer-events", "none")
       .attr("x", 4)
-      .attr("y", 13)
-      .attr("fill-opacity", d => +labelVisible(d));
+      // .attr("y", 13)
+      .attr("fill-opacity", d => +labelVisible(d))
+      .attr("transform", d => `translate(0,${(Math.max((d.x1 - d.x0)/2 , 14))})`);
 
   text.append("tspan")
       .text(d => d.data.name);
 
-  const tspan = text.append("tspan")
-      .attr("fill-opacity", d => labelVisible(d) * 0.7)
-      .text(d => ` ${formatData(d.value)}`);
+  // const tspan = text.append("tspan")
+  //     .attr("fill-opacity", d => labelVisible(d) * 0.7)
+  //     .text(d => ` ${formatData(d.value)}`);
+  // tSPAN - is the little number
 
   cell.append("title")
       .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${formatData(d.value)}`);
 
   function clicked(event, p) {
+    // focus is the box that is expanded to full width 
+    // check if the one clicked on is focus or not 
+    // if it is focus being clicked - change focus to it's parent so can go backwards
+    // Else change focus to new clicked element
     focus = focus === p ? p = p.parent : p;
+    // console.log('p', p)
+    // console.log('Name', p.data.name)
+    // console.log('p.x0', p.x0)
+    // console.log('p.x1', p.x1)
+    // console.log('p.y0', p.y0)
+    // console.log('p.y1', p.y1)
 
     root.each(d => d.target = {
-      x0: (d.x0 - p.x0) / (p.x1 - p.x0) * HEIGHT,
+      // Calculate the fraction of total height you need 
+      x0: (d.x0 - p.x0) / (p.x1 - p.x0) * HEIGHT, //x is a height // Calculate the fraction the current nodes displacement from 
       x1: (d.x1 - p.x0) / (p.x1 - p.x0) * HEIGHT,
+      // y is going across - NOTE: only translate the in chunks of (WIDTH/3 = 975/3 = 325)
       y0: d.y0 - p.y0,
-      y1: d.y1 - p.y0
+      y1: d.y1 - p.y0         // if clicked on the 2nd to last layer (leave y1)
     });
 
+    console.log('cell', cell)
     const t = cell.transition().duration(750)
         .attr("transform", d => `translate(${d.target.y0},${d.target.x0})`);
 
-    rect.transition(t).attr("height", d => rectHeight(d.target));
-    text.transition(t).attr("fill-opacity", d => +labelVisible(d.target));
-    tspan.transition(t).attr("fill-opacity", d => labelVisible(d.target) * 0.7);
+        console.log('t', t)
+    rect.transition(t).attr("height", d => rectHeight(d.target))
+    text.transition(t).attr("fill-opacity", d => +labelVisible(d.target))
+    .attr("transform", d => `translate(0,${(Math.max((d.target.x1 - d.target.x0)/2 , 14))})`); // centering in y-axis (14 incase very small number)
+
+    // you are translating text but it also has deualt y position - so get rid of that!!!
+    // tspan.transition(t).attr("fill-opacity", d => labelVisible(d.target) * 0.7)
   }
   
   function rectHeight(d) {
-    return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
+    // Min(bottom - top/2 OR 1)/2   
+    // x1-x0 is height 
+    // - min(1 OR  x1-x0/2)
+    // console.log('d.x1-d.x0', d.x1-d.x0)
+    // console.log('(d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2 ) ', (d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2 ) ))
+    return (d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2 ) );
   }
 
   function labelVisible(d) {
-    return d.y1 <= WIDTH && d.y0 >= 0 && d.x1 - d.x0 > 16;
+    return d.y1 <= WIDTH && d.y0 >= 0 && d.x1 - d.x0 > 19;
   }
   
   return svg.node();
@@ -115,8 +140,10 @@ export const Icicle = () => {
   return (
     <div>
       <h1>Icicle</h1>
-      
-        <svg></svg>
+      <div className="scrollable">
+      <svg></svg>
+
+      </div>
       
     </div>
   );

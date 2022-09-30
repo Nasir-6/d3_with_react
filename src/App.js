@@ -17,9 +17,9 @@ function App() {
       {/* <Face/> */}
       {/* <Colors/> */}
       {/* <Sunburst/> */}
-      {/* <Icicle/> */}
-      <Sunburst_unravel/>
-      <DataProcessor/>
+      <Icicle/>
+      {/* <Sunburst_unravel/> */}
+      {/* <DataProcessor> */}
 
 
     </div>

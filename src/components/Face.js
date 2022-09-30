@@ -21,7 +21,8 @@ export const Face = () => {
     .endAngle(Math.PI * 3 / 2);
 
   return (
-    <svg width={width} height={height}>
+    <>
+        <svg width={width} height={height}>
       <g transform={`translate(${centerX}, ${centerY})`}>
         <circle
         r={centerY-strokeWidth/2}
@@ -42,5 +43,13 @@ export const Face = () => {
         <path d={mouthArc()}/>
       </g>
      </svg>
+
+     <svg height="100rem" width="20rem">
+      {/* NO units is px */}
+      <rect height="100" width="300"></rect>
+     </svg>
+    </>
+
+
   )
 }

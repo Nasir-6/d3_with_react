@@ -135,7 +135,64 @@ export const Sunburst_unravel = () => {
           // clicking on last layer should unravel it
           console.log("onto last layer")
 
-        }
+
+          root.each(
+            (d) => {
+              console.log(d)
+              d.target = {
+                // set start angle 
+                // if outside the sector - then will go beyond 2 PI! - and collapse
+                // if inside work out the fraction of 2*pi using (d.x0 - p.x0) / (p.x1 - p.x0)
+                // do same for x1
+                x0:   
+                  (!Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI) ? 1.44 : 0,    // Math.max(0) ensures positive num - min(1) ensures lower than 1
+                x1:
+                  Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+                y0: Math.max(0, d.y0 - p.depth),  //y0 is depth if more than or equal to 3 or less than or equal to 1- dissappear 
+                y1: Math.max(0, d.y1 - p.depth),
+              }
+            }
+          );
+  
+          const t = g.transition().duration(1000);
+  
+          // Transition the data on all arcs, even the ones that aren’t visible,
+          // so that if this transition is interrupted, entering arcs will start
+          // the next transition from the desired position.
+          path
+            .transition(t)
+            .tween("data", (d) => {
+              // console.log('d.current', d.current)
+              // console.log('d.target', d.target)
+              const i = interpolate(d.current, d.target);   // creates an interpolation function - this will allow smooth transitions
+              // It is used in the last return statement - it is recursive function 
+              // t is a value from 0 to 1 
+              console.log('i', i)
+  
+              // NOTE: t here is a value [0 to 1] NOT TRANSITION t!!!
+              return (t) => (d.current = i(t));
+            })
+            .filter(function (d) {
+              return this.getAttribute("fill-opacity") || arcVisible(d.target);
+            })
+            .attr("fill-opacity", (d) =>
+              arcVisible(d.target) ? (d.children ? 0.6 : 0.4) : 0
+            )
+            .attr("pointer-events", (d) =>
+              arcVisible(d.target) ? "auto" : "none"
+            )
+            .attrTween("d", (d) => () => myArc(d.current));   // uses interpolated values here - i.e plots them!
+  
+          label
+            .filter(function (d) {
+              return this.getAttribute("fill-opacity") || labelVisible(d.target);   // filter to get all the visible labels
+            })
+            .transition(t)
+            .attr("fill-opacity", (d) => +labelVisible(d.target))
+            .attrTween("transform", (d) => () => labelTransform(d.current));
+  
+
+        } else {
 
         //
         root.each(
@@ -190,6 +247,8 @@ export const Sunburst_unravel = () => {
           .transition(t)
           .attr("fill-opacity", (d) => +labelVisible(d.target))
           .attrTween("transform", (d) => () => labelTransform(d.current));
+
+        }
       }
 
       function arcVisible(d) {

@@ -49,7 +49,7 @@ export const Icicle = () => {
       .attr("transform", d => `translate(${d.y0},${d.x0})`);
 
   const rect = cell.append("rect")
-      .attr("width", d => d.y1 - d.y0 - 1)
+      .attr("width", d => (d.children) ? d.y1 - d.y0 - 1 : 2 * ( d.y1 - d.y0 - 1))    // The last layer (LOs - no children) is double width so spans to the end when on 2nd to last layer! - use overflow-hidden prop
       .attr("height", d => rectHeight(d))
       .attr("fill-opacity", 0.6)
       .attr("fill", d => {

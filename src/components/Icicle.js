@@ -3,7 +3,7 @@ import { arc, format, hierarchy, partition } from "d3";
 import { scaleOrdinal, quantize, interpolateRainbow } from "d3";
 // imports for chart
 import { interpolate, select } from "d3";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // read in data - Replace with some fetch request eventually!
 // import data from '../data.json'
@@ -51,7 +51,7 @@ export const Icicle = () => {
   const rect = cell.append("rect")
       .attr("width", d => (d.children) ? d.y1 - d.y0 - 1 : 2 * ( d.y1 - d.y0 - 1))    // The last layer (LOs - no children) is double width so spans to the end when on 2nd to last layer! - use overflow-hidden prop
       .attr("height", d => rectHeight(d))
-      .attr("fill-opacity", 0.6)
+      .attr("fill-opacity", 0.6)              // Target this to change the opacity!
       .attr("fill", d => {
         if (!d.depth) return "#ccc";
         while (d.depth > 1) d = d.parent;
@@ -80,11 +80,24 @@ export const Icicle = () => {
       .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${formatData(d.value)}`);
 
   function clicked(event, p) {
-    // focus is the box that is expanded to full width 
+
+    if(!p.children){
+      const learningObj = p.data.name   // stored here so can set different opacity 
+      setLearningObj(learningObj)
+      console.log('p', p)
+      p = p.parent    // set the reference/target to the parent - so doesn't zoom into LO
+      focus = p 
+    } else{
+      // focus is the box that is expanded to full width 
     // check if the one clicked on is focus or not 
     // if it is focus being clicked - change focus to it's parent so can go backwards
     // Else change focus to new clicked element
+    console.log("Not a learning objective")
     focus = focus === p ? p = p.parent : p;
+    }
+
+    
+   
     // console.log('p', p)
     // console.log('Name', p.data.name)
     // console.log('p.x0', p.x0)
@@ -101,12 +114,11 @@ export const Icicle = () => {
       y1: d.y1 - p.y0         // if clicked on the 2nd to last layer (leave y1)
     });
 
-    console.log('cell', cell)
+    
     const t = cell.transition().duration(750)
         .attr("transform", d => `translate(${d.target.y0},${d.target.x0})`);
 
-        console.log('t', t)
-    rect.transition(t).attr("height", d => rectHeight(d.target))
+    rect.transition(t).attr("height", d => rectHeight(d.target)).attr("fill-opacity", d => d.target.name === learningObj ? 1 : 0.5)
     text.transition(t).attr("fill-opacity", d => +labelVisible(d.target))
     .attr("transform", d => `translate(0,${(Math.max((d.target.x1 - d.target.x0)/2 , 14))})`); // centering in y-axis (14 incase very small number)
 
@@ -137,14 +149,21 @@ export const Icicle = () => {
     effectRan.current = true;
   }, []);
 
-  return (
-    <div>
-      <h1>Icicle</h1>
-      <div className="scrollable">
-      <svg></svg>
 
+  const [learningObj, setLearningObj] = useState("Hello")
+  const [searchQuery, setSearchQuery] = useState("");
+
+  return (
+    <div className="icicle-page" style={{display: "flex"}}>
+      <div style={{display: "flex", flexDirection: "column"}}>
+        <h2>Icicle</h2>
+        <input type="text" placeholder="Search" onChange={(e) => setSearchQuery(e.target.value)}/>
+        <svg></svg>
       </div>
-      
+      <div>
+        <h1>Selected LO information goes here!</h1>
+        <h2>{learningObj}</h2>
+      </div>
     </div>
   );
 };

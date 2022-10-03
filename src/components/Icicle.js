@@ -42,6 +42,8 @@ export const Icicle = () => {
       .style("overflow", "auto")
       // .style("height", "100vh");
 
+      console.log('svg', svg)
+
   const cell = svg
     .selectAll("g")
     .data(root.descendants())
@@ -52,6 +54,15 @@ export const Icicle = () => {
       .attr("width", d => (d.children) ? d.y1 - d.y0 - 1 : 2 * ( d.y1 - d.y0 - 1))    // The last layer (LOs - no children) is double width so spans to the end when on 2nd to last layer! - use overflow-hidden prop
       .attr("height", d => rectHeight(d))
       .attr("fill-opacity", 0.6)              // Target this to change the opacity!
+      // .attr("fill-opacity", d => {
+      //   // console.log('d', d)
+      //   if(d.data.name.toLowerCase().includes(searchQuery.toLowerCase())){
+      //     // console.log('d contains search', d)
+      //   }
+
+      // })
+      
+      
       .attr("fill", d => {
         if (!d.depth) return "#ccc";
         while (d.depth > 1) d = d.parent;
@@ -77,7 +88,8 @@ export const Icicle = () => {
   // tSPAN - is the little number
 
   cell.append("title")
-      .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${formatData(d.value)}`);
+      // .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${formatData(d.value)}`);  
+      .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}`); // Remove the value at end of title - easier for tracking parents when highlighting searchQuery
 
   function clicked(event, p) {
 
@@ -154,6 +166,7 @@ export const Icicle = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const highLightLearningObjectives = () => {
+
     if(searchQuery === ""){
       console.log("Empty Search")
     } else {

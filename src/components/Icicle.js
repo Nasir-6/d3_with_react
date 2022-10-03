@@ -153,6 +153,47 @@ export const Icicle = () => {
   const [learningObj, setLearningObj] = useState("Hello")
   const [searchQuery, setSearchQuery] = useState("");
 
+  const highLightLearningObjectives = () => {
+    if(searchQuery === ""){
+      console.log("Empty Search")
+    } else {
+      console.log('searchQuery', searchQuery)
+
+      console.log("Working")
+    // grab all rectangles - use g and filter using the title!
+    const boxes = document.querySelectorAll("g")
+    // console log them
+    // console.log('boxes', boxes)
+    // console.log('boxes[0].data.name', boxes[2].lastChild.textContent)
+    // Filter them 
+    // const filtered_boxes = boxes.filter((box) => box.lastChild.textContent.includes(`${searchQuery}`))
+    // console.log('filtered_boxes', filtered_boxes)
+    boxes.forEach(box => {
+
+      console.log('box', box)
+
+      if(searchQuery === ""){      
+        box.firstChild.style.setProperty("fill-opacity", "0.6", "")
+      } else if (box.lastChild.textContent.toLowerCase().includes(searchQuery.toLowerCase())){
+        // console.log('box', box)
+        // console.log('box.firstChild', box.firstChild)
+        box.firstChild.style.setProperty("fill-opacity", "1", "")
+      } else {
+        box.firstChild.style.setProperty("fill-opacity", "0.6", "")
+      }
+    })
+    // change the color to white
+    // Now change opacity to increase a bit
+    }
+    
+  }
+
+  useEffect(() => {
+    highLightLearningObjectives()
+  },[searchQuery])
+
+
+
   return (
     <div className="icicle-page" style={{display: "flex"}}>
       <div style={{display: "flex", flexDirection: "column"}}>

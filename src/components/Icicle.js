@@ -73,9 +73,11 @@ export const Icicle = () => {
     return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
   }
 
-  const isLabelVisibile = (d) => {
+  const isLabelVisible = (d) => {
     // return 1 = Visible Or 0 = NotVisible
-    return d.y1 <= WIDTH && d.y0 >= 0 && d.x1 - d.x0 > 19;
+    // x is in vertical direction and y in horizontal!!
+    // y1 = RH-Edge, y0 = LH-Edge - BUT THEY DON'T CHANGE!! - d.target changes!!!!!
+    return d.y1 <= WIDTH && d.y0 >= 0 && d.x1 - d.x0 > 20;
   }
 
   const createAndAppendTextContainersToCells = (cells) => {
@@ -83,18 +85,80 @@ export const Icicle = () => {
       .append("text")
       .style("user-select", "none")
       .attr("pointer-events", "none")
-      .attr("x", 4)
+      .attr("x", 5)
       // .attr("y", 13)
-      .attr("fill-opacity", (d) => +isLabelVisibile(d))
+      .attr("fill-opacity", (d) => +isLabelVisible(d))
       .attr(
         "transform",
         (d) => `translate(0,${Math.max((d.x1 - d.x0) / 2, 14)})`
       );
   }
+  
+  // https://stackoverflow.com/questions/24784302/wrapping-text-in-d3
+  function wrap(text) {
+    console.log('text', text)
+    text.each(function () {
 
-  const createAndAppendTextToTextContainers = (text) => {
-    return text.append("tspan").text((d) => d.data.name);
+      console.log('this.attr("dy")', select(this).attr("level"))
+      // console.log("Calling wrap function");
+      // console.log("this", this);
+      // console.log("select(this)", select(this));
+
+      var text = select(this),
+        words = text.text().split(/\s+/).reverse(), //Splits and reverses - so can pop off the end!
+        word,
+        line = [],
+        lineHeight = 1.2, // ems
+        level = parseInt(text.attr("level")),
+        tspan = text
+        //   .text(text.text())
+        //   .append("tspan")
+        //   .attr("x", 5)
+
+
+      word = words.pop();
+      const maxCharLength = level < 4 ? 45 : 90
+      while (word) {
+        // whilst you got words to pop - keep going! - ALSO Added hasMoved to make it stop
+        line.push(word);
+        tspan.text(line.join(" "));
+        if (tspan.text().length > maxCharLength) {
+          // If current length is more than 45 chars - turn it into a variable??
+          line.pop(); // remove last word
+          tspan.text(line.join(" ")); // Join the array of words by adding in space in between
+          line = [word];
+          // Keep adding any new words to the
+          tspan = text
+            .append("tspan")
+            .attr("x", 5)
+            // .attr("y", y)
+            .attr("dy", lineHeight + "em")
+            .text(word);
+          // TO ADD EPLISES MAKE SURE WHILE STATEMENT HAS && !hasMoved
+          //   tspan.append("tspan").text("...")
+        }
+        word = words.pop();
+      }
+    });
   }
+
+  const createAndAppendTextToTextContainers = (textContainers) => {
+    // Wrap text in the any layers except last layer
+    console.log("I'm appending Text");
+
+    return textContainers.append("tspan").text((d) => {
+      // console.log('d', d)
+      // console.log('d.data.name', d.data)
+      return d.data.name;
+    }).attr("level", (d) => {
+      // console.log('d', d)
+      return d.depth
+    })
+    .call(wrap);
+  };
+
+
+
 
   const createAndAppendTitlesToCells = (cells) => {
     return cells
@@ -149,7 +213,14 @@ export const Icicle = () => {
   const translateAndTransformTextContainers = (textContainers, translation) => {
     return textContainers
         .transition(translation)
-        .attr("fill-opacity", (d) => +isLabelVisibile(d.target))
+        .attr("fill-opacity", (d) => {
+          console.log('d', d)
+          // SPECIAL CASE FOR LAST LEVEL TO NOT SHOW UNTIL EXPANDED FULLY!!
+          if(d.target.y1 >= WIDTH && d.depth === 4) return 0;
+          if(d.target.y1 >= WIDTH && d.parent.data.name === "Programming" && d.value <= 7) return 0; // THIS IS TO Hide "Relational operations in a programming language" & "Programming/Arithmetic operations in a programming language" when in last layer so stops showing when they overflow into box below - NEED TO FIND A BETTER WAY !!!! 
+          return +isLabelVisible(d.target)
+        }
+        )
         .attr(
           "transform",
           (d) => `translate(0,${Math.max((d.target.x1 - d.target.x0) / 2, 14)})`
@@ -170,7 +241,7 @@ export const Icicle = () => {
     const textContainers = createAndAppendTextContainersToCells(cells);
 
     const text = createAndAppendTextToTextContainers(textContainers)
-    
+
     const titles = createAndAppendTitlesToCells(cells)
 
     return svg.node();
@@ -209,7 +280,7 @@ export const Icicle = () => {
     effectRan.current = true;
   }, []);
 
-  const [learningObj, setLearningObj] = useState("Hello");
+  const [learningObj, setLearningObj] = useState("No learning objectives selected!");
   const [searchQuery, setSearchQuery] = useState("");
 
   const highLightLearningObjectives = () => {

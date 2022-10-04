@@ -108,7 +108,7 @@ export const Sunburst = () => {
         .attr("transform", (d) => labelTransform(d.current))
         .text((d) => d.data.name)
         // ADD IN ??
-        .call(wrap, 900);
+        .call(wrap);
 
         // This is the inner white circle 
       const parent = g
@@ -204,7 +204,7 @@ export const Sunburst = () => {
 
 
       // https://stackoverflow.com/questions/24784302/wrapping-text-in-d3
-      function wrap(text, width) {
+      function wrap(text) {
         text.each(function() {
           var text = select(this),
               words = text.text().split(/\s+/).reverse(),       //Splits and reverses - so can pop off the end!

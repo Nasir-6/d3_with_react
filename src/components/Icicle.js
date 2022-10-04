@@ -157,8 +157,7 @@ export const Icicle = () => {
   }
 
 
-  // creating the actual chart - REMEMBER TO CALL IT
-  var chart = () => {
+  const createChart = () => {
     const root = partitionData(data);
     let currentFocus = root;
 
@@ -171,13 +170,12 @@ export const Icicle = () => {
     const textContainers = createAndAppendTextContainersToCells(cells);
 
     const text = createAndAppendTextToTextContainers(textContainers)
-    // const tspan = text.append("tspan")
-    //     .attr("fill-opacity", d => labelVisible(d) * 0.7)
-    //     .text(d => ` ${formatData(d.value)}`);
-    // tSPAN - is the little number
+    
     const titles = createAndAppendTitlesToCells(cells)
 
+    return svg.node();
 
+    // clickhandler defined here as a function so can be hoisted whilst also having access to rect, root, currentFocus etc.
     function handleClickedCell(event, clickedRectangle){
       const clickedLearningObjective = !clickedRectangle.children;
       if (clickedLearningObjective) {
@@ -202,15 +200,12 @@ export const Icicle = () => {
 
       translateAndTransformTextContainers(textContainers, translation)
     }
-
-
-    return svg.node();
   };
 
   // render chart - using the function! - useRef used to do only on first mount - react v18 mounts twice in dev mode!
   const effectRan = useRef(false);
   useEffect(() => {
-    if (effectRan.current === false) chart();
+    if (effectRan.current === false) createChart();
     effectRan.current = true;
   }, []);
 

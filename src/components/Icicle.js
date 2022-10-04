@@ -1,4 +1,4 @@
-import { arc, format, hierarchy, partition } from "d3";
+import { format, hierarchy, partition } from "d3";
 // Color imports
 import { scaleOrdinal, quantize, interpolateRainbow } from "d3";
 // imports for chart
@@ -30,69 +30,74 @@ export const Icicle = () => {
     return partition().size([HEIGHT, ((root.height + 1) * WIDTH) / 3])(root);
   };
 
-  // creating the actual chart - REMEMBER TO CALL IT
-  var chart = () => {
-    const root = partitionData(data);
-    let focus = root;
-
-    const svg = select("svg")
+  const createSvgViewBox = () => {
+    return select("svg")
       .attr("viewBox", [0, 0, WIDTH, HEIGHT])
       .style("font", "15px sans-serif")
       .style("width", "50vw")
-      .style("overflow", "auto");
+      .style("overflow", "auto")
+      // .style("overflow", "visible");
     // .style("height", "100vh");
+  }
 
-    console.log("svg", svg);
 
-    const cell = svg
+  const createCellsFromData = (svg, root) => {
+    return svg
       .selectAll("g")
       .data(root.descendants())
       .join("g")
-      .attr("transform", (d) => `translate(${d.y0},${d.x0})`);
+      .attr("transform", (d) => `translate(${d.y0},${d.x0})`)
+  }
 
-    const rect = cell
-      .append("rect")
-      .attr("width", (d) =>
-        d.children ? d.y1 - d.y0 - 1 : 2 * (d.y1 - d.y0 - 1)
-      ) // The last layer (LOs - no children) is double width so spans to the end when on 2nd to last layer! - use overflow-hidden prop
-      .attr("height", (d) => rectHeight(d))
-      .attr("fill-opacity", 0.6) // Target this to change the opacity!
-      // .attr("fill-opacity", d => {
-      //   // console.log('d', d)
-      //   if(d.data.name.toLowerCase().includes(searchQuery.toLowerCase())){
-      //     // console.log('d contains search', d)
-      //   }
+  const createAndAppendBoxesToCells = (cells, clicked) => {
+    return cells
+    .append("rect")
+    .attr("width", (d) =>
+      d.children ? d.y1 - d.y0 - 1 : 2 * (d.y1 - d.y0 - 1)
+    ) // The last layer (LOs - no children) is double width so spans to the end when on 2nd to last layer! - use overflow-hidden prop
+    .attr("height", (d) => getRectangleHeight(d))
+    .attr("fill-opacity", 0.6) // Target this to change the opacity!
+    .attr("fill", (d) => {
+      if (!d.depth) return "#ccc";
+      while (d.depth > 1) d = d.parent;
+      return setColor(d.data.name);
+    })
+    .style("cursor", "pointer")
+    .on("click", clicked);
+  }
 
-      // })
+  const getRectangleHeight = (d) => {
+    // Min(bottom - top/2 OR 1)/2
+    // x1-x0 is height
+    // - min(1 OR  x1-x0/2)
+    return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
+  }
 
-      .attr("fill", (d) => {
-        if (!d.depth) return "#ccc";
-        while (d.depth > 1) d = d.parent;
-        return setColor(d.data.name);
-      })
-      .style("cursor", "pointer")
-      .on("click", clicked);
+  const isLabelVisibile = (d) => {
+    // return 1 = Visible Or 0 = NotVisible
+    return d.y1 <= WIDTH && d.y0 >= 0 && d.x1 - d.x0 > 19;
+  }
 
-    const text = cell
+  const createAndAppendTextContainersToCells = (cells) => {
+    return cells
       .append("text")
       .style("user-select", "none")
       .attr("pointer-events", "none")
       .attr("x", 4)
       // .attr("y", 13)
-      .attr("fill-opacity", (d) => +labelVisible(d))
+      .attr("fill-opacity", (d) => +isLabelVisibile(d))
       .attr(
         "transform",
         (d) => `translate(0,${Math.max((d.x1 - d.x0) / 2, 14)})`
       );
+  }
 
-    text.append("tspan").text((d) => d.data.name);
+  const createAndAppendTextToTextContainers = (text) => {
+    return text.append("tspan").text((d) => d.data.name);
+  }
 
-    // const tspan = text.append("tspan")
-    //     .attr("fill-opacity", d => labelVisible(d) * 0.7)
-    //     .text(d => ` ${formatData(d.value)}`);
-    // tSPAN - is the little number
-
-    cell
+  const createAndAppendTitlesToCells = (cells) => {
+    return cells
       .append("title")
       // .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${formatData(d.value)}`);
       .text(
@@ -103,75 +108,101 @@ export const Icicle = () => {
             .reverse()
             .join("/")}`
       ); // Remove the value at end of title - easier for tracking parents when highlighting searchQuery
+  }
 
-    function clicked(event, p) {
-      if (!p.children) {
-        const learningObj = p.data.name; // stored here so can set different opacity
-        setLearningObj(learningObj);
-        console.log("p", p);
-        p = p.parent; // set the reference/target to the parent - so doesn't zoom into LO
-        focus = p;
-      } else {
-        // focus is the box that is expanded to full width
-        // check if the one clicked on is focus or not
-        // if it is focus being clicked - change focus to it's parent so can go backwards
-        // Else change focus to new clicked element
-        console.log("Not a learning objective");
-        focus = focus === p ? (p = p.parent) : p;
-      }
 
-      // console.log('p', p)
-      // console.log('Name', p.data.name)
-      // console.log('p.x0', p.x0)
-      // console.log('p.x1', p.x1)
-      // console.log('p.y0', p.y0)
-      // console.log('p.y1', p.y1)
+  const updateTargetPositionOfNodes = (root, focusedRectangle) => {
+    root.each(
+      (d) =>
+        (d.target = {
+          // Calculate the fraction of total height you need
+          x0:
+            ((d.x0 - focusedRectangle.x0) /
+              (focusedRectangle.x1 - focusedRectangle.x0)) *
+            HEIGHT, //x is a height // Calculate the fraction the current nodes displacement from
+          x1:
+            ((d.x1 - focusedRectangle.x0) /
+              (focusedRectangle.x1 - focusedRectangle.x0)) *
+            HEIGHT,
+          // y is going across - NOTE: only translate the in chunks of (WIDTH/3 = 975/3 = 325)
+          y0: d.y0 - focusedRectangle.y0,
+          y1: d.y1 - focusedRectangle.y0, // if clicked on the 2nd to last layer (leave y1)
+        })
+    );
+  }
 
-      root.each(
-        (d) =>
-          (d.target = {
-            // Calculate the fraction of total height you need
-            x0: ((d.x0 - p.x0) / (p.x1 - p.x0)) * HEIGHT, //x is a height // Calculate the fraction the current nodes displacement from
-            x1: ((d.x1 - p.x0) / (p.x1 - p.x0)) * HEIGHT,
-            // y is going across - NOTE: only translate the in chunks of (WIDTH/3 = 975/3 = 325)
-            y0: d.y0 - p.y0,
-            y1: d.y1 - p.y0, // if clicked on the 2nd to last layer (leave y1)
-          })
-      );
-
-      const t = cell
+  const translateCellsAndReturnTranslationTransition = (cells) => {
+    return cells
         .transition()
         .duration(750)
         .attr("transform", (d) => `translate(${d.target.y0},${d.target.x0})`);
+  }
 
-      rect
-        .transition(t)
-        .attr("height", (d) => rectHeight(d.target))
+  const translateAndTransformRectangles = (rect, translation, learningObj) => {
+    return rect
+        .transition(translation)
+        .attr("height", (d) => getRectangleHeight(d.target))
         .attr("fill-opacity", (d) => (d.target.name === learningObj ? 1 : 0.5));
-      text
-        .transition(t)
-        .attr("fill-opacity", (d) => +labelVisible(d.target))
+        // TODO: Figure out how to show selected one!!
+  }
+
+  const translateAndTransformTextContainers = (textContainers, translation) => {
+    return textContainers
+        .transition(translation)
+        .attr("fill-opacity", (d) => +isLabelVisibile(d.target))
         .attr(
           "transform",
           (d) => `translate(0,${Math.max((d.target.x1 - d.target.x0) / 2, 14)})`
         ); // centering in y-axis (14 incase very small number)
+  }
 
-      // you are translating text but it also has deualt y position - so get rid of that!!!
-      // tspan.transition(t).attr("fill-opacity", d => labelVisible(d.target) * 0.7)
+
+  // creating the actual chart - REMEMBER TO CALL IT
+  var chart = () => {
+    const root = partitionData(data);
+    let currentFocus = root;
+
+    const svg = createSvgViewBox();
+
+    const cells = createCellsFromData(svg, root);
+
+    const rect = createAndAppendBoxesToCells(cells, handleClickedCell);
+
+    const textContainers = createAndAppendTextContainersToCells(cells);
+
+    const text = createAndAppendTextToTextContainers(textContainers)
+    // const tspan = text.append("tspan")
+    //     .attr("fill-opacity", d => labelVisible(d) * 0.7)
+    //     .text(d => ` ${formatData(d.value)}`);
+    // tSPAN - is the little number
+    const titles = createAndAppendTitlesToCells(cells)
+
+
+    function handleClickedCell(event, clickedRectangle){
+      const clickedLearningObjective = !clickedRectangle.children;
+      if (clickedLearningObjective) {
+        // const learningObj = clickedRectangle.data.name; // stored here so can set different opacity
+        setLearningObj(clickedRectangle.data.name);
+        if(currentFocus === clickedRectangle.parent) return;
+      }
+      
+      let focusedRectangle;
+      if(clickedRectangle === currentFocus || clickedLearningObjective){
+        focusedRectangle = clickedRectangle.parent
+      } else{
+        focusedRectangle = clickedRectangle;
+      }
+      currentFocus = focusedRectangle
+
+      updateTargetPositionOfNodes(root, focusedRectangle);
+
+      const translation = translateCellsAndReturnTranslationTransition(cells);
+      
+      translateAndTransformRectangles(rect, translation, learningObj)
+
+      translateAndTransformTextContainers(textContainers, translation)
     }
 
-    function rectHeight(d) {
-      // Min(bottom - top/2 OR 1)/2
-      // x1-x0 is height
-      // - min(1 OR  x1-x0/2)
-      // console.log('d.x1-d.x0', d.x1-d.x0)
-      // console.log('(d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2 ) ', (d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2 ) ))
-      return d.x1 - d.x0 - Math.min(1, (d.x1 - d.x0) / 2);
-    }
-
-    function labelVisible(d) {
-      return d.y1 <= WIDTH && d.y0 >= 0 && d.x1 - d.x0 > 19;
-    }
 
     return svg.node();
   };
@@ -187,33 +218,12 @@ export const Icicle = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const highLightLearningObjectives = () => {
-    console.log("searchQuery", searchQuery);
-
-    console.log("Working");
+    
     // grab all rectangles - use g and filter using the title!
     const boxes = document.querySelectorAll("g");
 
-
-    // boxes.forEach((box) => {
-    //   // console.log('box', box)
-
-    //   if (searchQuery === "") {
-    //     box.firstChild.style.setProperty("fill-opacity", "0.6", "");
-    //   } else if (
-    //     box.lastChild.textContent
-    //       .toLowerCase()
-    //       .includes(searchQuery.toLowerCase())
-    //   ) {
-    //     // console.log('box', box)
-    //     // console.log('box.firstChild', box.firstChild)
-    //     box.firstChild.style.setProperty("fill-opacity", "1", "");
-    //   } else {
-    //     box.firstChild.style.setProperty("fill-opacity", "0.6", "");
-    //   }
-    // });
-
     //     Loop through from end of array (so can grab parents along the way) - don't use foreach
-    console.log("boxes", boxes);
+    // console.log("boxes", boxes);
 
     // initialise HashMap to store ancestor paths so can highlight them aswell
     const ancestorMap = new Map();

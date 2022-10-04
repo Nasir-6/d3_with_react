@@ -1,8 +1,8 @@
-import { format, hierarchy, partition } from "d3";
+import { hierarchy, partition } from "d3";
 // Color imports
 import { scaleOrdinal, quantize, interpolateRainbow } from "d3";
 // imports for chart
-import { interpolate, select } from "d3";
+import { select } from "d3";
 import { useEffect, useRef, useState } from "react";
 
 // read in data - Replace with some fetch request eventually!
@@ -16,7 +16,6 @@ export const Icicle = () => {
   const WIDTH = 975;
   const HEIGHT = 1500;
 
-  var formatData = format(",d");
 
   var setColor = scaleOrdinal(
     quantize(interpolateRainbow, data.children.length + 1)
@@ -151,7 +150,6 @@ export const Icicle = () => {
   const createAndAppendTitlesToCells = (cells) => {
     return cells
       .append("title")
-      // .text(d => `${d.ancestors().map(d => d.data.name).reverse().join("/")}\n${formatData(d.value)}`);
       .text(
         (d) =>
           `${d
@@ -159,7 +157,7 @@ export const Icicle = () => {
             .map((d) => d.data.name)
             .reverse()
             .join("/")}`
-      ); // Remove the value at end of title - easier for tracking parents when highlighting searchQuery
+      );
   }
 
 

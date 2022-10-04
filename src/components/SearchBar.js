@@ -56,7 +56,7 @@ export const SearchBar = () => {
     useEffect(() => {
       if(searchQuery.length === 1) {
         setSearchQuery("")
-        return;
+        return; // return to prevent glitching
     } 
       highlightSearchQueries();
     }, [searchQuery]);

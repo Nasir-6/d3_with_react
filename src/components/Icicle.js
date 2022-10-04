@@ -33,7 +33,7 @@ export const Icicle = () => {
   const createSvgViewBox = () => {
     return select("svg")
       .attr("viewBox", [0, 0, WIDTH, HEIGHT])
-      .style("font", "15px sans-serif")
+      .style("font", "14px sans-serif")
       .style("width", "50vw")
       .style("overflow", "auto")
       // .style("overflow", "visible");
@@ -96,13 +96,7 @@ export const Icicle = () => {
   
   // https://stackoverflow.com/questions/24784302/wrapping-text-in-d3
   function wrap(text) {
-    console.log('text', text)
     text.each(function () {
-
-      console.log('this.attr("dy")', select(this).attr("level"))
-      // console.log("Calling wrap function");
-      // console.log("this", this);
-      // console.log("select(this)", select(this));
 
       var text = select(this),
         words = text.text().split(/\s+/).reverse(), //Splits and reverses - so can pop off the end!
@@ -117,13 +111,12 @@ export const Icicle = () => {
 
 
       word = words.pop();
-      const maxCharLength = level < 4 ? 45 : 90
+      const maxCharLength = level < 4 ? 45 : 105 // Last level (4) has extended width/charLength!
       while (word) {
         // whilst you got words to pop - keep going! - ALSO Added hasMoved to make it stop
         line.push(word);
         tspan.text(line.join(" "));
         if (tspan.text().length > maxCharLength) {
-          // If current length is more than 45 chars - turn it into a variable??
           line.pop(); // remove last word
           tspan.text(line.join(" ")); // Join the array of words by adding in space in between
           line = [word];
@@ -131,11 +124,8 @@ export const Icicle = () => {
           tspan = text
             .append("tspan")
             .attr("x", 5)
-            // .attr("y", y)
             .attr("dy", lineHeight + "em")
             .text(word);
-          // TO ADD EPLISES MAKE SURE WHILE STATEMENT HAS && !hasMoved
-          //   tspan.append("tspan").text("...")
         }
         word = words.pop();
       }
@@ -223,8 +213,8 @@ export const Icicle = () => {
         )
         .attr(
           "transform",
-          (d) => `translate(0,${Math.max((d.target.x1 - d.target.x0) / 2, 14)})`
-        ); // centering in y-axis (14 incase very small number)
+          (d) => `translate(0,${Math.max((d.target.x1 - d.target.x0) / 2, 15)})`
+        ); // centering in y-axis (15 incase very small number)
   }
 
 

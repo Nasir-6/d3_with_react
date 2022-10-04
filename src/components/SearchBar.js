@@ -54,6 +54,10 @@ export const SearchBar = () => {
     };
   
     useEffect(() => {
+      if(searchQuery.length === 1) {
+        setSearchQuery("")
+        return;
+    } 
       highlightSearchQueries();
     }, [searchQuery]);
 

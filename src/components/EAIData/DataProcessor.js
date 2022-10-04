@@ -16,31 +16,31 @@ export const DataProcessor = () => {
     for (const row of csvData) {
       // This is the new Category - i.e the uppermost layer
       // if it is not found in the data object - create that and push it
-      const newCat = data;
-      if (!newCat.children.find((a) => a.name === row["Parent Category"])) {
-        newCat.children.push({
+      const newCategory = data;
+      if (!newCategory.children.find((a) => a.name === row["Parent Category"])) {
+        newCategory.children.push({
           name: row["Parent Category"],
           children: [],
         });
       }
 
       // do same for second layer
-      const cat = newCat.children.find(
+      const category = newCategory.children.find(
         (a) => a.name === row["Parent Category"]
       );
-      if (!cat.children.find((a) => a.name === row["Computational Concepts"])) {
-        cat.children.push({
+      if (!category.children.find((a) => a.name === row["Computational Concepts"])) {
+        category.children.push({
           name: row["Computational Concepts"],
           children: [],
         });
       }
 
       // do same for third layer
-      const cat2 = cat.children.find(
+      const category2 = category.children.find(
         (a) => a.name === row["Computational Concepts"]
       );
-      if (!cat2.children.find((a) => a.name === row["CS Category 3 Lesson"])) {
-        cat2.children.push({
+      if (!category2.children.find((a) => a.name === row["CS Category 3 Lesson"])) {
+        category2.children.push({
           name: row["CS Category 3 Lesson"],
           children: [],
           // value: 1,
@@ -48,12 +48,12 @@ export const DataProcessor = () => {
       }
 
       // For 4th/final layer
-      const cat3 = cat2.children.find(
+      const category3 = category2.children.find(
         (a) => a.name === row["CS Category 3 Lesson"]
       );
-      if (!cat3.children.find((a) => a.name === row["Learning Objectives"])) {
+      if (!category3.children.find((a) => a.name === row["Learning Objectives"])) {
         let val = 1;
-        cat3.children.push({
+        category3.children.push({
           name: row["Learning Objectives"],
           value: val,
         });

@@ -6,11 +6,11 @@ import { interpolate, select } from 'd3';
 import {useEffect, useRef} from 'react'
 
 // read in data - Replace with some fetch request eventually!
-// import data from '../d3Data.json'
-// import data from '../tonyData.json'
-// import data from '../myData.json'
-// import data from '../newCategoriesData.json'
-import data from '../newWeightedCategories.json'
+// import data from '../data/d3Data.json'
+// import data from '../data/tonyData.json'
+// import data from "../data/myData.json";
+// import data from "../data/newCategoriesData.json";
+import data from "../data/newWeightedCategories.json";
 
 export const Sunburst = () => {
 

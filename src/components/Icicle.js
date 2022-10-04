@@ -6,12 +6,14 @@ import { select } from "d3";
 import { useEffect, useRef, useState } from "react";
 
 // read in data - Replace with some fetch request eventually!
-// import data from '../d3Data.json'
-// import data from '../tonyData.json'
-// import data from "../myData.json";
-import data from "../newCategoriesData.json";
+// import data from './data/d3Data.json'
+// import data from './data/tonyData.json'
+// import data from "./data/myData.json";
+import data from "./data/newCategoriesData.json";
+// import data from "./data/newWeightedCategories.json";
+
 import { SearchBar } from "./SearchBar";
-// import data from "../newWeightedCategories.json";
+
 
 export const Icicle = () => {
   const WIDTH = 975;
@@ -268,7 +270,7 @@ export const Icicle = () => {
     hasMounted.current = true;
   }, []);
 
-  
+
   return (
     <div className="icicle-page" style={{ display: "flex" }}>
       <div style={{ display: "flex", flexDirection: "column" }}>

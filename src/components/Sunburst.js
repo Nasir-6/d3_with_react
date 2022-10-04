@@ -6,8 +6,8 @@ import { interpolate, select } from 'd3';
 import {useEffect, useRef} from 'react'
 
 // read in data - Replace with some fetch request eventually!
-// import data from '../data.json'
-// import data from '../Originaldata-Tony.json'
+// import data from '../d3Data.json'
+// import data from '../tonyData.json'
 // import data from '../myData.json'
 // import data from '../newCategoriesData.json'
 import data from '../newWeightedCategories.json'

@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 // import data from '../tonyData.json'
 // import data from "../myData.json";
 import data from "../newCategoriesData.json";
+import { SearchBar } from "./SearchBar";
 // import data from "../newWeightedCategories.json";
 
 export const Icicle = () => {
@@ -96,7 +97,6 @@ export const Icicle = () => {
   // https://stackoverflow.com/questions/24784302/wrapping-text-in-d3
   function wrap(text) {
     text.each(function () {
-
       var text = select(this),
         words = text.text().split(/\s+/).reverse(), //Splits and reverses - so can pop off the end!
         word,
@@ -327,6 +327,7 @@ export const Icicle = () => {
     <div className="icicle-page" style={{ display: "flex" }}>
       <div style={{ display: "flex", flexDirection: "column" }}>
         <h2>Icicle</h2>
+        <SearchBar/>
         <input
           type="text"
           placeholder="Search"

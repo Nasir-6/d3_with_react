@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 // import data from './data/tonyData.json'
 // import data from "./data/myData.json";
 import data from "./data/newCategoriesData.json";
+// import data from "./data/noEAI.json";
 // import data from "./data/newWeightedCategories.json";
 
 import { SearchBar } from "./SearchBar";
@@ -35,7 +36,7 @@ export const Icicle = () => {
   const createSvgViewBox = () => {
     return select("svg")
       .attr("viewBox", [0, 0, WIDTH, HEIGHT])
-      .style("font", "14px sans-serif")
+      .style("font", "15px sans-serif")
       .style("width", "50vw")
       .style("overflow", "auto")
       // .style("overflow", "visible");
@@ -65,7 +66,8 @@ export const Icicle = () => {
       return setColor(d.data.name);
     })
     .style("cursor", "pointer")
-    .on("click", clicked);
+    .on("click", clicked)
+    // .attr("rx", 15);
   }
 
   const getRectangleHeight = (d) => {
@@ -112,7 +114,7 @@ export const Icicle = () => {
 
 
       word = words.pop();
-      const maxCharLength = level < 4 ? 45 : 105 // Last level (4) has extended width/charLength!
+      const maxCharLength = level < 4 ? 45 : 90 // Last level (4) has extended width/charLength! 105 with font-size 14px
       while (word) {
         // whilst you got words to pop - keep going! - ALSO Added hasMoved to make it stop
         line.push(word);

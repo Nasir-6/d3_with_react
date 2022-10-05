@@ -6,6 +6,7 @@ import { Face } from './components/pilot/Face';
 import { Sunburst } from './components/pilot/Sunburst';
 import { DataProcessor } from './components/data/DataProcessor';
 import { Icicle } from './components/Icicle';
+// import { FuzzySearch } from './components/FuzzySearch';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       {/* <Sunburst/> */}
       <Icicle/>
       {/* <DataProcessor> */}
+      {/* <FuzzySearch/> */}
     </div>
   );
 }

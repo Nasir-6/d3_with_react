@@ -18,6 +18,7 @@ export const SearchBar = () => {
           }
           
     }
+    
     const highlightSearchQueries = () => {
       const boxes = document.querySelectorAll("g");
   

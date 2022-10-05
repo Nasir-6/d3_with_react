@@ -1,7 +1,4 @@
 {
-  "name": "Education AI Curriculum",
-  "children": [
-    {
       "name": "Computer Systems & General Knowledge",
       "children": [
         {
@@ -4127,6 +4124,5 @@
           ]
         }
       ]
-    }
-  ]
+  
 }

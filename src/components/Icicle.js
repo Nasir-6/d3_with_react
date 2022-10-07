@@ -1,3 +1,4 @@
+import { convertLength } from "@mui/material/styles/cssUtils";
 import { hierarchy, partition } from "d3";
 // Color imports
 import { scaleOrdinal, quantize, interpolateRainbow } from "d3";
@@ -9,9 +10,10 @@ import { useEffect, useRef, useState } from "react";
 // import data from './data/d3Data.json'
 // import data from './data/tonyData.json'
 // import data from "./data/myData.json";
-import data from "./data/newCategoriesData.json";
+// import data from "./data/newCategoriesData.json";
 // import data from "./data/noEAI.json";
 // import data from "./data/newWeightedCategories.json";
+import data from "./data/UpdatedNewCategoriesData.json";
 
 import { SearchBar } from "./SearchBar";
 
@@ -36,7 +38,7 @@ export const Icicle = () => {
   const createSvgViewBox = () => {
     return select("svg")
       .attr("viewBox", [0, 0, WIDTH, HEIGHT])
-      .style("font", "15px sans-serif")
+      .style("font", "16px sans-serif")     // mont-ser
       .style("width", "50vw")
       .style("overflow", "auto")
       // .style("overflow", "visible");
@@ -49,7 +51,7 @@ export const Icicle = () => {
       .selectAll("g")
       .data(root.descendants())
       .join("g")
-      .attr("transform", (d) => `translate(${d.y0},${d.x0})`)
+      .attr("transform", (d) => `translate(${d.y0 - 325},${d.x0})`)   // Start position is -325 so rootNode is hidden
   }
 
   const createAndAppendBoxesToCells = (cells, clicked) => {
@@ -67,6 +69,10 @@ export const Icicle = () => {
     })
     .style("cursor", "pointer")
     .on("click", clicked)
+    .attr("padding", 50)
+    .attr("id", (d) => {
+      return d.data.uid;
+    })
     // .attr("rx", 15);
   }
 
@@ -114,7 +120,7 @@ export const Icicle = () => {
 
 
       word = words.pop();
-      const maxCharLength = level < 4 ? 45 : 90 // Last level (4) has extended width/charLength! 105 with font-size 14px
+      const maxCharLength = level < 4 ? 45 : 84 // Last level (4) has extended width/charLength! 105 with font-size 14px
       while (word) {
         // whilst you got words to pop - keep going! - ALSO Added hasMoved to make it stop
         line.push(word);
@@ -137,7 +143,7 @@ export const Icicle = () => {
 
   const createAndAppendTextToTextContainers = (textContainers) => {
     // Wrap text in the any layers except last layer
-    console.log("I'm appending Text");
+    // console.log("I'm appending Text");
 
     return textContainers.append("tspan").text((d) => {
       // console.log('d', d)
@@ -166,9 +172,13 @@ export const Icicle = () => {
 
 
   const updateTargetPositionOfNodes = (root, focusedRectangle) => {
+    const focusIsRootNode = focusedRectangle.depth === 0
     root.each(
-      (d) =>
-        (d.target = {
+      (d) => {
+        // console.log('d', d)
+        // console.log('focusedRectangle', focusedRectangle) 
+        
+        return (d.target = {
           // Calculate the fraction of total height you need
           x0:
             ((d.x0 - focusedRectangle.x0) /
@@ -179,9 +189,11 @@ export const Icicle = () => {
               (focusedRectangle.x1 - focusedRectangle.x0)) *
             HEIGHT,
           // y is going across - NOTE: only translate the in chunks of (WIDTH/3 = 975/3 = 325)
-          y0: d.y0 - focusedRectangle.y0,
-          y1: d.y1 - focusedRectangle.y0, // if clicked on the 2nd to last layer (leave y1)
+          // IF focusedRect is the /
+          y0: (focusIsRootNode)? d.y0 - focusedRectangle.y0 - 325 : d.y0 - focusedRectangle.y0,
+          y1: (focusIsRootNode)? d.y1 - focusedRectangle.y0 - 325 : d.y1 - focusedRectangle.y0, // if clicked on the 2nd to last layer (leave y1)
         })
+      }
     );
   }
 
@@ -204,7 +216,7 @@ export const Icicle = () => {
     return textContainers
         .transition(translation)
         .attr("fill-opacity", (d) => {
-          console.log('d', d)
+          // console.log('d', d)
           // SPECIAL CASE FOR LAST LEVEL TO NOT SHOW UNTIL EXPANDED FULLY!!
           if(d.target.y1 >= WIDTH && d.depth === 4) return 0;
           if(d.target.y1 >= WIDTH && d.parent.data.name === "Programming" && d.value <= 7) return 0; // THIS IS TO Hide "Relational operations in a programming language" & "Programming/Arithmetic operations in a programming language" when in last layer so stops showing when they overflow into box below - NEED TO FIND A BETTER WAY !!!! 
@@ -221,7 +233,7 @@ export const Icicle = () => {
   const [learningObj, setLearningObj] = useState("No learning objectives selected!");
 
   const createChart = () => {
-    const root = partitionData(data);
+    let root = partitionData(data);
     let currentFocus = root;
 
     const svg = createSvgViewBox();
@@ -240,6 +252,8 @@ export const Icicle = () => {
 
     // clickhandler defined here as a function so can be hoisted whilst also having access to rect, root, currentFocus etc.
     function handleClickedCell(event, clickedRectangle){
+      console.log('event', event)
+      console.log('clickedRectangle', clickedRectangle)
       const clickedLearningObjective = !clickedRectangle.children;
       if (clickedLearningObjective) {
         // const learningObj = clickedRectangle.data.name; // stored here so can set different opacity
@@ -273,6 +287,18 @@ export const Icicle = () => {
   }, []);
 
 
+  const handleButtonClick = () => {
+    console.log("bitton clicked")
+    const id = "09ca2bb5-9355-457e-aa3d-a59e12141309";
+    const preReqElement = document.getElementById(id);
+    console.log('preReqElement', preReqElement)
+    // preReqElement.click()
+    let root = partitionData(data);
+    const node = root.find(d => d.data.uid === "09ca2bb5-9355-457e-aa3d-a59e12141309")
+    console.log('node', node)
+  }
+
+
   return (
     <div className="icicle-page" style={{ display: "flex" }}>
       <div style={{ display: "flex", flexDirection: "column" }}>
@@ -281,6 +307,7 @@ export const Icicle = () => {
         <svg></svg>
       </div>
       <div>
+        <button onClick={handleButtonClick}>Button</button>
         <h1>Selected LO information goes here!</h1>
         <h2>{learningObj}</h2>
       </div>

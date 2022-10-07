@@ -16,7 +16,7 @@ function App() {
       {/* <Face/> */}
       {/* <Sunburst/> */}
       <Icicle/>
-      {/* <DataProcessor> */}
+      <DataProcessor/>
       {/* <FuzzySearch/> */}
     </div>
   );

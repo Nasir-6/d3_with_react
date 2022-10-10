@@ -1,5 +1,5 @@
 import { convertLength } from "@mui/material/styles/cssUtils";
-import { hierarchy, partition } from "d3";
+import { hierarchy, partition, selectAll } from "d3";
 // Color imports
 import { scaleOrdinal, quantize, interpolateRainbow } from "d3";
 // imports for chart
@@ -19,6 +19,9 @@ import { SearchBar } from "./SearchBar";
 
 
 export const Icicle = () => {
+
+  const [rootNode, setRootNode] = useState({})
+  // const [focusedRect, setFocusedRect]
   const WIDTH = 975;
   const HEIGHT = 1500;
 
@@ -54,7 +57,7 @@ export const Icicle = () => {
       .attr("transform", (d) => `translate(${d.y0 - 325},${d.x0})`)   // Start position is -325 so rootNode is hidden
   }
 
-  const createAndAppendBoxesToCells = (cells, clicked) => {
+  const createAndAppendBoxesToCells = (cells, handleClickedCell) => {
     return cells
     .append("rect")
     .attr("width", (d) =>
@@ -68,7 +71,7 @@ export const Icicle = () => {
       return setColor(d.data.name);
     })
     .style("cursor", "pointer")
-    .on("click", clicked)
+    .on("click", handleClickedCell)
     .attr("padding", 50)
     .attr("id", (d) => {
       return d.data.uid;
@@ -172,11 +175,8 @@ export const Icicle = () => {
 
 
   const updateTargetPositionOfNodes = (root, focusedRectangle) => {
-    const focusIsRootNode = focusedRectangle.depth === 0
     root.each(
       (d) => {
-        // console.log('d', d)
-        // console.log('focusedRectangle', focusedRectangle) 
         
         return (d.target = {
           // Calculate the fraction of total height you need
@@ -190,8 +190,8 @@ export const Icicle = () => {
             HEIGHT,
           // y is going across - NOTE: only translate the in chunks of (WIDTH/3 = 975/3 = 325)
           // IF focusedRect is the /
-          y0: (focusIsRootNode)? d.y0 - focusedRectangle.y0 - 325 : d.y0 - focusedRectangle.y0,
-          y1: (focusIsRootNode)? d.y1 - focusedRectangle.y0 - 325 : d.y1 - focusedRectangle.y0, // if clicked on the 2nd to last layer (leave y1)
+          y0: (focusedRectangle.depth === 0)? d.y0 - focusedRectangle.y0 - 325 : d.y0 - focusedRectangle.y0,
+          y1: (focusedRectangle.depth === 0)? d.y1 - focusedRectangle.y0 - 325 : d.y1 - focusedRectangle.y0, // if clicked on the 2nd to last layer (leave y1)
         })
       }
     );
@@ -230,10 +230,14 @@ export const Icicle = () => {
   }
 
 
-  const [learningObj, setLearningObj] = useState("No learning objectives selected!");
+  const [learningObj, setLearningObj] = useState("");
 
   const createChart = () => {
     let root = partitionData(data);
+    console.log('root', root)
+    setRootNode(()=>root);
+    console.log('rootNode', rootNode)
+
     let currentFocus = root;
 
     const svg = createSvgViewBox();
@@ -252,12 +256,11 @@ export const Icicle = () => {
 
     // clickhandler defined here as a function so can be hoisted whilst also having access to rect, root, currentFocus etc.
     function handleClickedCell(event, clickedRectangle){
-      console.log('event', event)
-      console.log('clickedRectangle', clickedRectangle)
+
       const clickedLearningObjective = !clickedRectangle.children;
       if (clickedLearningObjective) {
         // const learningObj = clickedRectangle.data.name; // stored here so can set different opacity
-        setLearningObj(clickedRectangle.data.name);
+        setLearningObj(clickedRectangle);
         if(currentFocus === clickedRectangle.parent) return;
       }
       
@@ -270,11 +273,10 @@ export const Icicle = () => {
       currentFocus = focusedRectangle
 
       updateTargetPositionOfNodes(root, focusedRectangle);
-
       const translation = translateCellsAndReturnTranslationTransition(cells);
       
       translateAndTransformRectangles(rect, translation, learningObj)
-
+  
       translateAndTransformTextContainers(textContainers, translation)
     }
   };
@@ -288,15 +290,32 @@ export const Icicle = () => {
 
 
   const handleButtonClick = () => {
-    console.log("bitton clicked")
+    console.log("bitton clicked");
     const id = "09ca2bb5-9355-457e-aa3d-a59e12141309";
-    const preReqElement = document.getElementById(id);
-    console.log('preReqElement', preReqElement)
-    // preReqElement.click()
-    let root = partitionData(data);
-    const node = root.find(d => d.data.uid === "09ca2bb5-9355-457e-aa3d-a59e12141309")
-    console.log('node', node)
-  }
+    console.log('rootNode', rootNode)
+    // let root = partitionData(data);
+    const node = rootNode.find(
+      (d) => d.data.uid === "09ca2bb5-9355-457e-aa3d-a59e12141309"
+    );
+
+    // todo: How do you find the current focus node?? -- need to find it!!
+    let currentFocus = learningObj;
+
+
+    const cells = selectAll("g");
+    const rect = selectAll("rect");
+    const textContainers = selectAll("text");
+
+    setLearningObj(node);
+    if (currentFocus === node.parent) return;
+
+    currentFocus = node.parent;
+
+    updateTargetPositionOfNodes(rootNode, currentFocus);
+    const translation = translateCellsAndReturnTranslationTransition(cells);
+    translateAndTransformRectangles(rect, translation, learningObj);
+    translateAndTransformTextContainers(textContainers, translation);
+  };
 
 
   return (
@@ -309,7 +328,7 @@ export const Icicle = () => {
       <div>
         <button onClick={handleButtonClick}>Button</button>
         <h1>Selected LO information goes here!</h1>
-        <h2>{learningObj}</h2>
+        <h2>{(learningObj)? learningObj.data.name : "No LO selected"}</h2>
       </div>
     </div>
   );

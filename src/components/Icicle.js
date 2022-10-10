@@ -21,9 +21,7 @@ import { SearchBar } from "./SearchBar";
 export const Icicle = () => {
 
   const [rootNode, setRootNode] = useState({})
-  const currentFocus = useRef("REF NOT SET")
-
-  
+  const currentFocus = useRef("REF NOT SET");
   
   const WIDTH = 975;
   const HEIGHT = 1500;

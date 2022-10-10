@@ -21,7 +21,7 @@ import { SearchBar } from "./SearchBar";
 export const Icicle = () => {
 
   const [rootNode, setRootNode] = useState({})
-  const [currentFocusState, setCurrentFocusState] = useState("NOT SET")
+  
   const currentFocusRef = useRef("REF NOT SET")
   const WIDTH = 975;
   const HEIGHT = 1500;
@@ -235,11 +235,9 @@ export const Icicle = () => {
 
   const createChart = () => {
     let root = partitionData(data);
-    console.log('root', root)
-    setRootNode(()=>root);
-    console.log('rootNode', rootNode)
+    setRootNode(root);
+    
 
-    let currentFocus = root;
     currentFocusRef.current = root;
     const svg = createSvgViewBox();
 
@@ -258,7 +256,7 @@ export const Icicle = () => {
     // clickhandler defined here as a function so can be hoisted whilst also having access to rect, root, currentFocus etc.
     function handleClickedCell(event, clickedRectangle){
 
-      console.log("CLICKING CELL UPDATE")
+    
 
       const clickedLearningObjective = !clickedRectangle.children;
       if (clickedLearningObjective) {
@@ -274,15 +272,7 @@ export const Icicle = () => {
         focusedRectangle = clickedRectangle;
       }
 
-      console.log('OLDcurrentFocusRef', currentFocusRef)
       currentFocusRef.current = focusedRectangle;
-      console.log('NEWcurrentFocusRef', currentFocusRef)
-      console.log('OldCurrentFocus', currentFocus)
-      currentFocus = focusedRectangle
-      console.log('NewCurrentFocus', currentFocus)
-
-      console.log('currentFocus', currentFocus)
-      setCurrentFocusState(currentFocus);
 
       updateTargetPositionOfNodes(root, focusedRectangle);
       const translation = translateCellsAndReturnTranslationTransition(cells);
@@ -310,9 +300,6 @@ export const Icicle = () => {
       (d) => d.data.uid === "09ca2bb5-9355-457e-aa3d-a59e12141309"
     );
 
-    // todo: How do you find the current focus node?? -- need to find it!!
-    let currentFocus = learningObj;
-
 
     const cells = selectAll("g");
     const rect = selectAll("rect");
@@ -321,11 +308,9 @@ export const Icicle = () => {
     setLearningObj(node);
     if (currentFocusRef.current === node.parent) return;
 
-    currentFocus = node.parent;
-    // setCurrentFocusState(currentFocus);
     currentFocusRef.current = node.parent;
 
-    updateTargetPositionOfNodes(rootNode, currentFocus);
+    updateTargetPositionOfNodes(rootNode, currentFocusRef.current);
     const translation = translateCellsAndReturnTranslationTransition(cells);
     translateAndTransformRectangles(rect, translation, learningObj);
     translateAndTransformTextContainers(textContainers, translation);
